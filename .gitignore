@@ -1,6 +1,19 @@
-*.class
+## tools artifacts ##
 
-# Package Files #
-*.jar
-*.war
-*.ear
+#idea:
+*.iml
+.idea
+
+#emacs:
+*~
+
+#maven
+classes.timestamp
+target
+
+#gwt compiler:
+webapp/src/main/webapp/springdb/
+webapp/src/main/webapp/WEB-INF/deploy/
+webapp/war/
+gwt-unitCache/
+

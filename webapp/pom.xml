@@ -1,0 +1,187 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>com.github.mbsimonovic</groupId>
+        <artifactId>spiffyui_hash_bug</artifactId>
+        <version>1.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.github.mbsimonovic</groupId>
+    <artifactId>webapp</artifactId>
+    <version>1.0</version>
+    <packaging>war</packaging>
+    <name>webapp</name>
+
+    <properties>
+        <gwt.version>2.5.1</gwt.version>
+        <gwt.maven.version>2.5.1</gwt.maven.version>
+        <jetty.version>6.1.26</jetty.version>
+        <webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
+    </properties>
+
+    <build>
+        <outputDirectory>${webappDirectory}/WEB-INF/classes</outputDirectory>
+
+        <plugins>
+            <!-- Copy static web files before executing gwt:run -->
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.1.1</version>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <!--<goal>inplace</goal>-->
+                            <goal>exploded</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <webappDirectory>${webappDirectory}</webappDirectory>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>maven-jetty-plugin</artifactId>
+                <version>${jetty.version}</version>
+                <configuration>
+                    <systemProperties>
+                        <systemProperty>
+                            <!--only used to locate realm.prooperties inside jetty-web.xml:-->
+                            <name>jetty.home</name>
+                            <value>${webappDirectory}</value>
+                        </systemProperty>
+                    </systemProperties>
+                    <scanIntervalSeconds>3</scanIntervalSeconds>
+                    <webAppConfig>
+                        <contextPath>/</contextPath>
+                    </webAppConfig>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>gwt-maven-plugin</artifactId>
+                <version>${gwt.maven.version}</version>
+                <configuration>
+                    <!-- if using jetty:run, jetty will use src/main/webapp as webapp (scaning for changes and reloading).
+                   inplace will put gwt artifacts into src/main/webapp subfolders. WARNING: gwt:clean will delete
+                   those folders!-->
+                    <!--update: this makes request factory fail while compiling?-->
+                    <!--<inplace>true</inplace>-->
+
+                    <!-- copy static resources (src/main/webapp)-->
+                    <copyWebapp>true</copyWebapp>
+
+                    <!--force re-compilation-->
+                    <!--<force>true</force>-->
+                    <!--can't use strict when using request factory !?-->
+                    <!--<strict>true</strict>-->
+
+                    <runTarget>index.html</runTarget>
+                    <style>PRETTY</style>
+                    <draftCompile>true</draftCompile>
+                    <logLevel>INFO</logLevel>
+
+                    <extraJvmArgs>-Xmx512M -Xss1024k</extraJvmArgs>
+
+                    <modules>
+                        <module>com.github.mbsimonovic.spiffy.SpringDbWeb</module>
+                    </modules>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <goals>
+
+                            <goal>resources</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>Codehaus Snapshots</id>
+            <url>https://nexus.codehaus.org/content/repositories/snapshots</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+                <!-- Workaround for MNG-2974 -->
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <dependencies>
+        <!--  GWT dependencies (from central repo) -->
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-user</artifactId>
+            <version>${gwt.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-servlet</artifactId>
+            <version>${gwt.version}</version>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.gwt.inject</groupId>
+            <artifactId>gin</artifactId>
+            <version>1.5.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <!--validation requreid also for GWT-->
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>1.0.0.GA</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>1.0.0.GA</version>
+            <classifier>sources</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>4.0.2.GA</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-impl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.spiffyui</groupId>
+            <artifactId>spiffyui</artifactId>
+            <!--            <version>1.2-SNAPSHOT</version>-->
+            <version>1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+            <scope>provided</scope>
+        </dependency>
+
+    </dependencies>
+</project>
